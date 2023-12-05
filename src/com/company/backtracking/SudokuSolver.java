@@ -1,7 +1,6 @@
 package com.company.backtracking;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Write a function that solve sudoku puzzle
@@ -22,10 +21,13 @@ public class SudokuSolver {
     private static final int SHAPE = 9;
     private static final int GRID = 3;
     private static final int EMPTY = 0;
-    private static final Set<Integer> DIGITS = Set.of(1, 2, 3, 4, 5, 6, 7, 8, 9);
-    private static final int[] DIGITS2 = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+    private static int[][] board;
 
-    public static int[][] solve(int[][] board){
+    public SudokuSolver(int[][] grid) {
+        this.board = grid;
+    }
+
+    public static int[][] solve() {
         validate(board);
         List<int[][]> solutions = new ArrayList<>();
         search(board, solutions);
@@ -41,22 +43,15 @@ public class SudokuSolver {
         if (board.length != SHAPE) {
             throw new IllegalArgumentException();
         }
-        int countOfUnknown = 0;
         for(int i = 0; SHAPE > i; i++) {
             if (board[i].length != SHAPE) {
                 throw new IllegalArgumentException();
             }
             for (int j = 0; SHAPE > j; j++) {
-                if(Arrays.binarySearch(DIGITS2, board[i][j]) < 0 && board[i][j] != 0){
+                if(board[i][j] < 0 || 9 < board[i][j]) {
                     throw new IllegalArgumentException();
                 }
-                if(board[i][j] == 0){
-                    countOfUnknown++;
-                }
             }
-        }
-        if(countOfUnknown == 0){
-            throw new IllegalArgumentException();
         }
     }
 
@@ -87,78 +82,54 @@ public class SudokuSolver {
     }
 
     private static int[] getCandidates(int[][] board, int row, int column){
-        boolean[] set = new boolean[SHAPE+1];
-        addDigitsToSet(set, getRowDigits(board, row));
-        addDigitsToSet(set, getColDigits(board, column));
-        addDigitsToSet(set, getBoxDigits(board, row, column));
-        set[EMPTY] = true;
-        return getNotFoundFromSet(set);
+        int set = 0;
+        set |= getRowDigits(board, row);
+        set |= getColDigits(board, column);
+        set |= getBoxDigits(board, row, column);
+        return getNotFoundFromBitSet(set);
     }
 
-    private static Set<Integer> getCandidatesOld(int[][] board, int row, int column){
-        var set = new HashSet<Integer>();
-        set.addAll(Arrays.stream(getRowDigits(board, row)).boxed().collect(Collectors.toSet()));
-        set.addAll(Arrays.stream(getColDigits(board, column)).boxed().collect(Collectors.toSet()));
-        set.addAll(Arrays.stream(getBoxDigits(board, row, column)).boxed().collect(Collectors.toSet()));
-        set.remove(EMPTY);
-        Set<Integer> difference = new HashSet<>(DIGITS);
-        difference.removeAll(set);
-        return difference;
-    }
-
-    private static void addDigitsToSet(boolean[] set, int[] digits) {
-        for (int digit : digits) {
-            if(!set[digit]) {
-                set[digit] = true;
-            }
-        }
-    }
-
-    private static int[] getNotFoundFromSet(boolean[] set) {
-        int count = 0;
-        for (boolean isNotPresent : set) {
-            if (!isNotPresent) {
-                count++;
-            }
-        }
+    private static int[] getNotFoundFromBitSet(int set) {
+        int count = SHAPE - Integer.bitCount(set);
         int[] result = new int[count];
         int index = 0;
-        for (int i = 0; i < set.length; i++) {
-            if (!set[i]) {
+        for (int i = 1; i <= SHAPE; i++) {
+            if ((set & (1 << i)) == 0) {
                 result[index++] = i;
             }
         }
         return result;
     }
 
-    private static int[] getRowDigits(int[][] board, int row){
-        var set = new int[SHAPE];
+    private static int getRowDigits(int[][] board, int row){
+        int set = 0;
         for(int col = 0; board[row].length > col; col++){
-            set[col] = board[row][col];
+            if (board[row][col] != EMPTY) {
+                set |= 1 << board[row][col];
+            }
         }
         return set;
     }
 
-    private static int[] getColDigits(int[][] board, int col){
-        var set = new int[SHAPE];
+    private static int getColDigits(int[][] board, int col){
+        int set = 0;
         for(int row = 0; board.length > row; row++){
-            set[row] = board[row][col];
+            if (board[row][col] != EMPTY) {
+                set |= 1 << board[row][col];
+            }
         }
         return set;
     }
 
-    private static int[] getBoxDigits(int[][] board, int row, int col){
-        var set = new int[SHAPE];
-        var index = 0;
-        for(int boxIndexRow = 0; SHAPE > boxIndexRow; boxIndexRow += GRID) {
-            for (int boxIndexColumn = 0; SHAPE > boxIndexColumn; boxIndexColumn += GRID) {
-                if(boxIndexRow <= row && row < GRID + boxIndexRow && boxIndexColumn <= col && col < GRID + boxIndexColumn){
-                    for (int i = boxIndexRow; GRID + boxIndexRow > i; i++) {
-                        for (int j = boxIndexColumn; GRID + boxIndexColumn > j; j++) {
-                            set[index] = board[i][j];
-                            index++;
-                        }
-                    }
+    private static int getBoxDigits(int[][] board, int row, int col){
+        var set = 0;
+        int boxStartRow = row - row % GRID;
+        int boxStartCol = col - col % GRID;
+
+        for (int i = boxStartRow; i < boxStartRow + GRID; i++) {
+            for (int j = boxStartCol; j < boxStartCol + GRID; j++) {
+                if (board[i][j] != EMPTY) {
+                    set |= 1 << board[i][j];
                 }
             }
         }
@@ -167,24 +138,33 @@ public class SudokuSolver {
 
     private static boolean validateRows(int[][] board){
         for (int row = 0; SHAPE > row; row++) {
-            var digits = new int[SHAPE];
+            int set = 0;
             for (int col = 0; SHAPE > col; col++) {
-                digits[col] = board[row][col];
-            }
-            if(!isValid(digits)){
-                return false;
+                int digit = board[row][col];
+                if (digit == EMPTY) {
+                    return false;
+                }
+                if ((set & (1 << digit)) != 0) {
+                    return false;
+                }
+                set |= 1 << digit;
             }
         }
         return true;
     }
+
     private static boolean validateColums(int[][] board){
         for (int col = 0; SHAPE > col; col++) {
-            var digits = new int[SHAPE];
+            var set = 0;
             for (int row = 0; SHAPE > row; row++) {
-                digits[row] = board[row][col];
-            }
-            if(!isValid(digits)){
-                return false;
+                var digit = board[row][col];
+                if (digit == EMPTY) {
+                    return false;
+                }
+                if ((set & (1 << digit)) != 0) {
+                    return false;
+                }
+                set |= 1 << digit;
             }
         }
         return true;
@@ -193,25 +173,22 @@ public class SudokuSolver {
     private static boolean validateBoxes(int[][] board){
         for(int boxIndexRow = 0; SHAPE > boxIndexRow; boxIndexRow += GRID) {
             for (int boxIndexColumn = 0; SHAPE > boxIndexColumn; boxIndexColumn += GRID) {
-                var digits = new int[SHAPE];
-                var index = 0;
+                var set = 0;
                 for (int row = boxIndexRow; GRID+boxIndexRow > row; row++) {
                     for (int col = boxIndexColumn; GRID + boxIndexColumn > col; col++) {
-                        digits[index] = board[row][col];
-                        index++;
+                        var digit = board[row][col];
+                        if (digit == EMPTY) {
+                            return false;
+                        }
+                        if ((set & (1 << digit)) != 0) {
+                            return false;
+                        }
+                        set |= 1 << digit;
                     }
-                }
-                if(!isValid(digits)){
-                    return false;
                 }
             }
         }
         return true;
-    }
-
-    private static boolean isValid(int[] array) {
-        Arrays.sort(array);
-        return Arrays.equals(array, DIGITS2);
     }
 
     private static int[][] copyBoard(int[][] board) {
@@ -225,4 +202,3 @@ public class SudokuSolver {
     }
 
 }
-
