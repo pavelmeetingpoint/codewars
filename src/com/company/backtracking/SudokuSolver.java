@@ -3,18 +3,23 @@ package com.company.backtracking;
 import java.util.*;
 
 /**
- * Write a function that solve sudoku puzzle
- *
- * var array = SudokuSolver.solve(new int[][]{
- *                 {0, 0, 6, 1, 0, 0, 0, 0, 8},
- *                 {0, 8, 0, 0, 9, 0, 0, 3, 0},
- *                 {2, 0, 0, 0, 0, 5, 4, 0, 0},
- *                 {4, 0, 0, 0, 0, 1, 8, 0, 0},
- *                 {0, 3, 0, 0, 7, 0, 0, 4, 0},
- *                 {0, 0, 7, 9, 0, 0, 0, 0, 3},
- *                 {0, 0, 8, 4, 0, 0, 0, 0, 6},
- *                 {0, 2, 0, 0, 5, 0, 0, 8, 0},
- *                 {1, 0, 0, 0, 0, 2, 5, 0, 0}});
+ var array = new SudokuSolver(new int[][]{
+ {0, 5, 7, 2, 0, 0, 0, 0, 0},
+ {0, 0, 0, 0, 9, 0, 8, 1, 0},
+ {0, 0, 0, 0, 0, 0, 0, 0, 0},
+ {9, 0, 0, 0, 3, 0, 0, 0, 0},
+ {0, 0, 0, 0, 0, 0, 0, 0, 7},
+ {0, 8, 0, 0, 0, 0, 0, 0, 5},
+ {0, 0, 0, 0, 0, 0, 0, 9, 4},
+ {8, 0, 0, 0, 0, 0, 0, 3, 0},
+ {0, 0, 2, 0, 0, 7, 0, 0, 0}});
+ var result = array.solve();
+ for(int i = 0; 9 > i; i++) {
+ for (int j = 0; 9 > j; j++) {
+ System.out.print(result[i][j] + " ");
+ }
+ System.out.println(" ");
+ }
  */
 public class SudokuSolver {
 
