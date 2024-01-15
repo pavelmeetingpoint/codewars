@@ -1,146 +1,57 @@
 package com.company;
 
+import com.company.array.DeepOfSubArray;
+import com.company.array.SumOfSubArray;
+import com.company.prime.MinimalPerimeter;
+import com.company.tasks.CanConstruct;
+import com.company.tasks.CanSum;
+import com.company.tasks.Fibonacci;
+import com.company.tasks.HowSum;
 
 import java.util.*;
-import java.util.stream.Collectors;
+import java.util.function.Consumer;
 
-@SuppressWarnings("NonAsciiCharacters")
+import static com.company.prime.Euclidean.primeDivisors;
+import static com.company.prime.Sieve.factorization;
+import static com.company.prime.Sieve.sieve;
+
 public class Main {
 
     public static void main(String[] args) throws InterruptedException {
+        var start = System.currentTimeMillis();
 
-        //String[] array = "()".split("");
-        //System.out.println(check(array));
+        int n = 60;
+        System.out.println("Prime numbers up to " + primeDivisors(n) + ":");
 
+        System.out.println("Time:" + (System.currentTimeMillis() - start));
     }
 
-    public static boolean check(String[] array){
-        Stack<String> stringStack = new Stack<>();
-        for(String string : array){
-            if(string.equals("(") || string.equals("{") || string.equals("[")){
-                stringStack.push(string);
-                continue;
-            }
-            if(stringStack.isEmpty())
-                return false;
-            if(string.equals(")")){
-                String back = stringStack.pop();
-                if(back.equals("{") || back.equals("[")){
-                    return false;
-                }
-            }
-            else if(string.equals("}")){
-                String back = stringStack.pop();
-                if(back.equals("(") || back.equals("[")){
-                    return false;
-                }
-            }
-            else if(string.equals("]")){
-                String back = stringStack.pop();
-                if(back.equals("(") || back.equals("{")){
-                    return false;
-                }
-            }
+    public static int solution(int[] a, int[] b) {
+        Stack<Integer> stackFlow = new Stack<>();
+        for(int i = a.length - 1; i >= 0; i--){
+            handle(stackFlow, a, b, i);
         }
-        return stringStack.isEmpty();
-
+        return stackFlow.size();
     }
+
+    private static void handle(Stack<Integer> stackFlow, int[] a, int[] b, int i){
+        if(stackFlow.isEmpty()){
+            stackFlow.push(i);
+        }
+        else {
+            int next = stackFlow.peek();
+            if (b[next] == b[i]) {
+                stackFlow.push(i);
+            } else if (b[i] == 1 && a[i] > a[next]) {
+                stackFlow.pop();
+                handle(stackFlow, a, b, i);
+            } else if(b[i] == 0){
+                stackFlow.push(i);
+            }
+
+        }
+    }
+
 
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-                /*
-        Node<Integer> root = new Node(1);
-        Node<Integer> left1 = new Node(2);
-        Node<Integer> right1 = new Node(2);
-        root.setLeft(left1);
-        root.setRight(right1);
-        Node<Integer> left2 = new Node(4);
-        Node<Integer> right2 = new Node(5);
-        left1.setLeft(left2);
-        left1.setRight(right2);
-        right1.setLeft(right2);
-        right1.setRight(left2);
-        */
-
-
-        /*
-
-
-    /*
-
-
-
-
-    char[][] mountain = {
-            "^^^^^^        ".toCharArray(),
-            " ^^^^^^^^     ".toCharArray(),
-            "  ^^^^^^^     ".toCharArray(),
-            "  ^^^^^       ".toCharArray(),
-            "  ^^^^^^^^^^^ ".toCharArray(),
-            "  ^^^^^^      ".toCharArray(),
-            "  ^^^^        ".toCharArray()
-    };
-    System.out.println(peakHeight(mountain));
-    */
-    /*
-            Первая лекция
-
-            final ExecutorService service = Executors.newFixedThreadPool(10);
-
-            for (int i = 0; i < 1000; i++) {
-                service.execute(() -> new СчетВБанке());
-                service.execute(() -> бабаЯга.положитьДеньги(10));
-            }
-
-            new Thread(() -> кощейБессмертный.положитьДеньги(10)).start();
-            new Thread(() -> бабаЯга.узнатьБаланс()).start();
-
-            Thread.sleep(100L);
-            счетвБанке.посмотретьБаланс("Центро Банк");
-            service.shutdown();
-        */
-
-        /*
-
-        Node<Integer> root = new Node(1);
-        Node<Integer> left1 = new Node(2);
-        Node<Integer> right1 = new Node(3);
-        root.setLeft(left1);
-        root.setRight(right1);
-        Node<Integer> left2 = new Node(4);
-        Node<Integer> right2 = new Node(5);
-        left1.setLeft(left2);
-        left1.setRight(right2);
-        Node<Integer> left3 = new Node(6);
-        Node<Integer> right3 = new Node(7);
-        right1.setLeft(left3);
-        right1.setRight(right3);
-
-        List<Integer> list = printBfvTree(root);
-        System.out.println(list);
-
-        */
