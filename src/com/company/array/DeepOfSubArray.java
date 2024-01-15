@@ -1,81 +1,46 @@
 package com.company.array;
 
-public class SumOfSubArray {
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
-    public static SubArray findMaximumSubArray(int[] array, int low, int high){
-        if(high == low){
-            return new SubArray(low, high, array[low]);
-        }
-        int mid = (low + high) / 2;
-        var left = findMaximumSubArray(array, low, mid);
-        var right = findMaximumSubArray(array, mid + 1, high);
-        var cross = findMaxCrossingSubArray(array, low, mid, high);
-        if(left.getSum() > right.getSum() && left.getSum() > cross.getLeft()){
-            return left;
-        }
-        else if(right.getSum() > left.getSum() && right.getSum() > cross.getSum()){
-            return right;
-        }
-        else{
-            return cross;
-        }
-    }
+public class DeepOfSubArray {
 
-    private static SubArray findMaxCrossingSubArray(int[] array, int low, int mid, int high){
-        int left_sum = Integer.MIN_VALUE;
-        int sum = 0;
+    public static int findMaximumDeepArray(int[] array, int low, int high){
+        boolean left = false;
         int max_left = 0;
-        for(int i = mid; i >= low; i--){
-            sum += array[i];
-            if(sum > left_sum){
-                left_sum = sum;
-                max_left = i;
+        int deep = 0;
+        int deepIndex = 0;
+        List<Integer> results = new ArrayList<>();
+        for(int i = 0; i < array.length; i++){
+            if(i == 0){
+                if(array[i] > array[i+1]) {
+                    max_left = array[i];
+                    left = true;
+                }
+            }
+            else if(array[i] > array[i-1] && !left){
+                max_left = array[i];
+                left = true;
+            }
+            else if(i + 1 > array.length - 1){
+                deep = array[i] - array[deepIndex];
+                results.add(deep);
+            }
+            else if(array[i] > max_left && left){
+                results.add(deep);
+                left = false;
+                max_left = array[i];
+                deep = 0;
+            }
+            else{
+                if(max_left - array[i] > deep){
+                    deep = max_left - array[i];
+                    deepIndex = i;
+                }
             }
         }
-        int right_sum = Integer.MIN_VALUE;
-        sum = 0;
-        int max_right = 0;
-        for(int i = mid + 1; i <= high; i++){
-            sum += array[i];
-            if(sum > right_sum){
-                right_sum = sum;
-                max_right = i;
-            }
-        }
-        return new SubArray(max_left, max_right, left_sum + right_sum);
-    }
-
-    private static class SubArray{
-        private int left;
-        private int right;
-        private int sum;
-
-        public SubArray(int left, int right, int sum) {
-            this.left = left;
-            this.right = right;
-            this.sum = sum;
-        }
-
-        public int getLeft() {
-            return left;
-        }
-
-        public int getRight() {
-            return right;
-        }
-
-        public int getSum() {
-            return sum;
-        }
-
-        @Override
-        public String toString() {
-            return "SubArray{" +
-                    "left=" + left +
-                    ", right=" + right +
-                    ", sum=" + sum +
-                    '}';
-        }
+        return deep;
     }
 
 }
